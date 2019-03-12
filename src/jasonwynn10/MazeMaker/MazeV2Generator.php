@@ -9,10 +9,14 @@ use pocketmine\math\Vector3;
 
 class MazeV2Generator extends Generator {
 	private $settings = [];
+	/** @var int[] $vertexVisited */
 	private $vertexVisited = [];
+	/** @var int[] $availableBranches */
 	private $availableBranches = [];
-	/** @var Maze $maze */
-	private $maze;
+	/** @var bool $debug */
+	private $debug = false;
+	/** @var int[] $blockPool */
+	private $blockPool = [];
 
 	/**
 	 * @param array $settings
@@ -28,7 +32,8 @@ class MazeV2Generator extends Generator {
 		}else{
 			$settings = [];
 		}
-		// TODO: block type settings for custom walls
+		$this->blockPool = $settings["blockPool"] ?? [Block::STONE_BRICK];
+		$this->debug = $settings["debug"] ?? true;
 		$this->settings = $settings;
 	}
 
@@ -65,10 +70,24 @@ class MazeV2Generator extends Generator {
 			for($z = 0; $z <= 15; $z++) {
 				if(in_array($i, $this->vertexVisited)) {
 					for($y = 5; $y <= 11; $y++) {
-						$chunk->setBlockId($x, $y, $z, $this->maze->getRandomBlockId());
+						$chunk->setBlockId($x, $y, $z, $this->blockPool[array_rand($this->blockPool)]);
 					}
 				}
 				$i++;
+			}
+		}
+
+		$this->availableBranches = [];
+		$this->vertexVisited = [];
+
+		if($this->debug) {
+			for($x = 0; $x <= 15; $x++) {
+				$chunk->setBlockId($x, 4, 0, Block::WOOL);
+				$chunk->setBlockId($x, 4, 15, Block::WOOL);
+			}
+			for($z = 0; $z <= 15; $z++) {
+				$chunk->setBlockId(0, 4, $z, Block::WOOL);
+				$chunk->setBlockId(15, 4, $z, Block::WOOL);
 			}
 		}
 
@@ -82,8 +101,11 @@ class MazeV2Generator extends Generator {
 	 * @return int[]
 	 */
 	protected function getAvailableBranchesOfVertex(int $point) : array {
-		// TODO: return empty array if no more branches available
-		return [];
+		$branches = [$point - 16, $point - 1, $point + 1, $point + 16]; // increment 16 for total row/column
+		$branches = array_filter($branches, function($value) {
+			return $value < (15*15) and $value >= 0 and !in_array($value, $this->vertexVisited);
+		});
+		return $branches;
 	}
 
 	public function populateChunk(int $chunkX, int $chunkZ) : void {
