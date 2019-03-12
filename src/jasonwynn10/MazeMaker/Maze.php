@@ -69,6 +69,7 @@ class Maze {
 		$this->sizeX = $sizeX;
 		$this->sizeZ = $sizeZ;
 		$this->hallSize = $hallSize;
+		$this->blockPool = $blockPool;
 		if($this->topologyX === self::OPEN and $this->topologyZ === self::OPEN) {
 			$this->outRoom = $sizeX * $sizeZ;
 		}

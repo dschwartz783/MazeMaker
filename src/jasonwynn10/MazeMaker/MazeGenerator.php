@@ -35,12 +35,12 @@ class MazeGenerator extends Generator {
 				$chunk->setBlockId($x, 4, $z, Block::GRASS);
 			}
 		}
-		$this->maze = new Maze(Maze::TOPOLOGY_OUTDOOR, 15, 15, 2, []);
+		$this->maze = new Maze(Maze::TOPOLOGY_OUTDOOR, 15, 15, 2, [Block::STONE_BRICK]); // TODO: set block ids
 		$this->availableBranches = $this->maze->getBorderBranches();
 		if(count($this->availableBranches) === 0) {
 			$vertexCount = $this->maze->getVertexCount();
 			if($vertexCount > 0) {
-				$startingVertex = (lcg_value() * $vertexCount);
+				$startingVertex = (int) (lcg_value() * $vertexCount);
 				$this->visitVertex($startingVertex);
 			}
 		}
@@ -61,7 +61,6 @@ class MazeGenerator extends Generator {
 
 	public function populateChunk(int $chunkX, int $chunkZ) : void {
 		// TODO: Implement populateChunk() method.
-		// TODO: biome and
 	}
 
 	public function getSettings() : array {
@@ -73,6 +72,6 @@ class MazeGenerator extends Generator {
 	}
 
 	public function getSpawn() : Vector3 {
-		return new Vector3(0, 6, 0);
+		return new Vector3(0, 6, 0); // TODO: set 1 block next to first maze wall in air space
 	}
 }
