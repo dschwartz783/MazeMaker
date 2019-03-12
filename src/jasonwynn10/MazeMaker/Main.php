@@ -8,5 +8,6 @@ use pocketmine\plugin\PluginBase;
 class Main extends PluginBase {
 	public function onLoad() {
 		GeneratorManager::addGenerator(MazeGenerator::class, "maze", true);
+		GeneratorManager::addGenerator(MazeV2Generator::class, "mazev2", true);
 	}
 }
