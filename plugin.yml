@@ -1,0 +1,6 @@
+name: MazeMaker
+main: jasonwynn10\MazeMaker\Main
+version: 0.1.0
+api: 3.0.0
+author: "jasonwynn10"
+description: "An infinite maze world generator"

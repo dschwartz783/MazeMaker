@@ -20,7 +20,6 @@ class MazeGenerator extends Generator {
 	 * @throws InvalidGeneratorOptionsException
 	 */
 	public function __construct(array $settings = []) {
-		parent::__construct($settings);
 		$this->settings = $settings;
 	}
 
@@ -37,6 +36,7 @@ class MazeGenerator extends Generator {
 		}
 		$this->maze = new Maze(Maze::TOPOLOGY_OUTDOOR, 15, 15, 2, [Block::STONE_BRICK]); // TODO: set block ids
 		$this->availableBranches = $this->maze->getBorderBranches();
+		//var_dump($this->availableBranches);
 		if(count($this->availableBranches) === 0) {
 			$vertexCount = $this->maze->getVertexCount();
 			if($vertexCount > 0) {
@@ -44,19 +44,30 @@ class MazeGenerator extends Generator {
 				$this->visitVertex($startingVertex);
 			}
 		}
+		while(!empty($this->availableBranches)) {
+			$key = array_rand($this->availableBranches);
+			//var_dump($this->vertexVisited);
+			if(!in_array($this->availableBranches[$key], $this->vertexVisited))
+				$this->visitVertex($this->availableBranches[$key]["vertex"]);
+			//var_dump($this->availableBranches);
+		}
 		foreach($this->maze->vertexFilled as $vertex => $state) {
 			$vector = $this->maze->getVertexLocation($vertex);
 			for($y = 5; $y <= 11; $y++) {
 				$chunk->setBlockId((int) $vector->x, $y, (int) $vector->y, $this->maze->getRandomBlockId());
 			}
 		}
+		$chunk->setChanged();
+		$chunk->setGenerated();
+		$chunk->setPopulated();
 	}
 
 	public function visitVertex(int $vertex) {
 		$this->vertexVisited[$vertex] = true;
 		$this->maze->vertexFilled[$vertex] = Maze::FILLED;
-		$branches = $this->maze->vertexToBranches($vertex);
-		$this->availableBranches = array_merge($this->availableBranches, $branches);
+		//$branches = $this->maze->vertexToBranches($vertex);
+		//$this->availableBranches = array_merge($this->availableBranches, $branches);
+		$this->availableBranches = $this->maze->vertexToBranches($vertex);
 	}
 
 	public function populateChunk(int $chunkX, int $chunkZ) : void {
@@ -72,6 +83,6 @@ class MazeGenerator extends Generator {
 	}
 
 	public function getSpawn() : Vector3 {
-		return new Vector3(0, 6, 0); // TODO: set 1 block next to first maze wall in air space
+		return new Vector3(0, 12, 0); // TODO: set 1 block next to first maze wall in air space
 	}
 }
