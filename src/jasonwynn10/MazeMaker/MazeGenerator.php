@@ -34,7 +34,7 @@ class MazeGenerator extends Generator {
 				$chunk->setBlockId($x, 4, $z, Block::GRASS);
 			}
 		}
-		$this->maze = new Maze(Maze::TOPOLOGY_OUTDOOR, 15, 15, 2, [Block::STONE_BRICK]); // TODO: set block ids
+		$this->maze = new Maze(Maze::TOPOLOGY_OUTDOOR, 7, 7, 2, [Block::STONE_BRICK]); // TODO: set block ids
 		$this->availableBranches = $this->maze->getBorderBranches();
 		//var_dump($this->availableBranches);
 		if(count($this->availableBranches) === 0) {
@@ -46,10 +46,11 @@ class MazeGenerator extends Generator {
 		}
 		while(!empty($this->availableBranches)) {
 			$key = array_rand($this->availableBranches);
-			//var_dump($this->vertexVisited);
-			if(!in_array($this->availableBranches[$key], $this->vertexVisited))
+			if(!in_array($this->availableBranches[$key], $this->vertexVisited)) {
+				$this->maze->edgeVisited = Maze::FILLED;
 				$this->visitVertex($this->availableBranches[$key]["vertex"]);
-			//var_dump($this->availableBranches);
+			}
+			unset($this->availableBranches[$key]);
 		}
 		foreach($this->maze->vertexFilled as $vertex => $state) {
 			$vector = $this->maze->getVertexLocation($vertex);
@@ -57,6 +58,8 @@ class MazeGenerator extends Generator {
 				$chunk->setBlockId((int) $vector->x, $y, (int) $vector->y, $this->maze->getRandomBlockId());
 			}
 		}
+		$this->availableBranches = [];
+		$this->vertexVisited = [];
 		$chunk->setChanged();
 		$chunk->setGenerated();
 		$chunk->setPopulated();
@@ -65,9 +68,8 @@ class MazeGenerator extends Generator {
 	public function visitVertex(int $vertex) {
 		$this->vertexVisited[$vertex] = true;
 		$this->maze->vertexFilled[$vertex] = Maze::FILLED;
-		//$branches = $this->maze->vertexToBranches($vertex);
-		//$this->availableBranches = array_merge($this->availableBranches, $branches);
-		$this->availableBranches = $this->maze->vertexToBranches($vertex);
+		$branches = $this->maze->vertexToBranches($vertex);
+		$this->availableBranches = array_merge($this->availableBranches, $branches);
 	}
 
 	public function populateChunk(int $chunkX, int $chunkZ) : void {

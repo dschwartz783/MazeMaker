@@ -62,6 +62,7 @@ class MazeV2Generator extends Generator {
 			unset($this->availableBranches[$key]);
 			$this->vertexVisited[] = $branchId;
 			$this->availableBranches = array_merge($this->availableBranches, $this->getAvailableBranchesOfVertex($branchId));
+			//$this->availableBranches = $this->getAvailableBranchesOfVertex($branchId);
 		}
 
 		//no more available branches
@@ -102,10 +103,29 @@ class MazeV2Generator extends Generator {
 	 */
 	protected function getAvailableBranchesOfVertex(int $point) : array {
 		$branches = [$point - 16, $point - 1, $point + 1, $point + 16]; // increment 16 for total row/column
-		$branches = array_filter($branches, function($value) {
-			return $value < (15*15) and $value >= 0 and !in_array($value, $this->vertexVisited);
+		$branches = array_filter($branches, function($value) use ($point) {
+			return $value < (15*15) and $value >= 0 and !in_array($value, $this->vertexVisited) and $this->isBranchPointDisconnected($value, $point);
 		});
 		return $branches;
+	}
+
+	/**
+	 * @param int $point
+	 * @param int $from
+	 *
+	 * @return bool
+	 */
+	public function isBranchPointDisconnected(int $point, int $from) : bool {
+		$possible = [$point - 16, $point - 1, $point + 1, $point + 16];
+		foreach($possible as $value) {
+			if($value === $from) {
+				continue;
+			}
+			if(in_array($value, $this->vertexVisited)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public function populateChunk(int $chunkX, int $chunkZ) : void {
